@@ -5,13 +5,20 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Map;
 
 public class FFmpegRawBytes {
 
-	public static void drawFrame(Graphics2D g, int w, int h, int f, int frame) {
+	static void drawFrame(Graphics2D g, int w, int h, int f, int frame) {
 		g.setColor(Color.RED);
 		g.drawLine(0, 0, 20, frame);
+	}
+
+	static void bgrToRgb(byte[] buffer) {
+		for (int i = 0; i < buffer.length; i += 3) {
+			buffer[i + 0] ^= buffer[i + 2];
+			buffer[i + 2] ^= buffer[i + 0];
+			buffer[i + 0] ^= buffer[i + 2];
+		}
 	}
 
 	public static void main(String[] args) throws IOException, InterruptedException {
@@ -35,14 +42,10 @@ public class FFmpegRawBytes {
 				g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
 
 				drawFrame(g, w, h, f, frame);
-				
+
 				byte[] buffer = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
 
-				for (int i = 0; i < buffer.length; i += 3) {
-					buffer[i + 0] ^= buffer[i + 2];
-					buffer[i + 2] ^= buffer[i + 0];
-					buffer[i + 0] ^= buffer[i + 2];
-				}
+				bgrToRgb(buffer);
 
 				stream.write(buffer);
 				stream.flush();
